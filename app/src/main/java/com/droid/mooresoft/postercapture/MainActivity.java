@@ -3,13 +3,19 @@ package com.droid.mooresoft.postercapture;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.googlecode.tesseract.android.TessBaseAPI;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +44,10 @@ public class MainActivity extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        startActivityForResult(intent, IMAGE_CAPTURE_REQUEST_CODE);
+        Intent chooser = Intent.createChooser(intent, "Take a photo or choose an image");
+        Intent pickImage = new Intent(Intent.ACTION_GET_CONTENT).setType("image/*");
+        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{pickImage});
+        startActivityForResult(chooser, IMAGE_CAPTURE_REQUEST_CODE);
     }
 
     private File getOutputFile() throws IOException {
@@ -52,7 +61,16 @@ public class MainActivity extends Activity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == IMAGE_CAPTURE_REQUEST_CODE) {
-            onImageCaptured(resultCode, data);
+            if (data != null) {
+                try {
+                    ImageView iv = (ImageView) findViewById(R.id.image);
+                    Bitmap bmp = BitmapFactory.decodeStream(getContentResolver().openInputStream(data.getData()));
+                    iv.setImageBitmap(bmp);
+                    doMagic(bmp);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else onImageCaptured(resultCode, data);
         }
     }
 
@@ -70,8 +88,31 @@ public class MainActivity extends Activity {
             Bitmap bmp = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mImageUri);
             ImageView imgView = (ImageView) findViewById(R.id.image);
             imgView.setImageBitmap(bmp);
+            doMagic(bmp);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void doMagic(final Bitmap bmp) {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected String doInBackground(Void... voids) {
+                Log.d(getClass().toString(), "beginning OCR...");
+                TessBaseAPI baseApi = new TessBaseAPI();
+                baseApi.init(getExternalFilesDir(null).toString(), "eng");
+                baseApi.setImage(bmp);
+                String result = baseApi.getUTF8Text();
+                baseApi.end();
+                return result;
+            }
+
+            @Override
+            protected void onPostExecute(String result) {
+                Log.d(getClass().toString(), "captured text: " + result);
+                TextView tv = (TextView) findViewById(R.id.magic_text);
+                tv.setText(result);
+            }
+        }.execute();
     }
 }
