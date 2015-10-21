@@ -13,13 +13,11 @@ import android.os.Message;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -55,6 +53,7 @@ public class DebugActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // this will be called after the user returns from the camera/gallery application
         if (resultCode == RESULT_OK) {
             DebugOcrFrag frag = null;
             switch (requestCode) {
@@ -65,6 +64,7 @@ public class DebugActivity extends Activity {
                     frag = DebugOcrFrag.newInstance(mCurrImgUri);
                     break;
             }
+            // show the OCR frag and the settings button
             getFragmentManager().beginTransaction().replace(R.id.frag_container, frag).commit();
             mMenu.findItem(R.id.action_settings).setVisible(true);
         }
@@ -79,6 +79,7 @@ public class DebugActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // one of the action bar buttons was clicked
         Intent intent = new Intent();
         switch (item.getItemId()) {
             case R.id.action_choose_image:
@@ -88,6 +89,7 @@ public class DebugActivity extends Activity {
                 return true;
             case R.id.action_take_picture:
                 intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+                // create a temp file where the image can be stored
                 String timestamp = new SimpleDateFormat("hhmmssMMddyy").format(System.currentTimeMillis());
                 try {
                     mCurrImgUri = Uri.fromFile(File.createTempFile(timestamp, ".png", getExternalFilesDir(null)));
@@ -98,6 +100,7 @@ public class DebugActivity extends Activity {
                 }
                 return true;
             case R.id.action_settings:
+                // switch to prefs frag and hide the setting button
                 getFragmentManager().beginTransaction().replace(R.id.frag_container, DebugPrefsFrag.newInstance()).commit();
                 mMenu.findItem(R.id.action_settings).setVisible(false);
                 return true;
@@ -105,12 +108,12 @@ public class DebugActivity extends Activity {
         return false;
     }
 
-
     public static class DebugOcrFrag extends Fragment implements View.OnClickListener {
 
-        private Uri mUri;
+        private Uri mUri; // path to the current image
         private ProgressBar mProgBar;
 
+        // main thread handler for updating the progress bar during OCR
         private final Handler mHandler = new Handler() {
             @Override
             public void handleMessage(final Message msg) {
@@ -151,7 +154,8 @@ public class DebugActivity extends Activity {
 
         @Override
         public void onClick(View v) {
-            if (v.getId() == R.id.debug_thumbnail) {
+            // open the image in gallery when user clicks on thumbnail
+            if (v.getId() == R.id.debug_thumbnail && mUri != null) {
                 Intent intent = new Intent(Intent.ACTION_VIEW)
                         .setDataAndType(mUri, "image/*");
                 startActivity(intent);
@@ -163,19 +167,27 @@ public class DebugActivity extends Activity {
             super.onStart();
             try {
                 final Bitmap bmp = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), mUri);
+                // start a background thread for doing the OCR
                 new AsyncTask<Void, Void, String>() {
                     @Override
                     protected String doInBackground(Void... params) {
+                        // get progress updates while OCR is running
                         TessBaseAPI tessBaseAPI = new TessBaseAPI(new TessBaseAPI.ProgressNotifier() {
                             @Override
                             public void onProgressValues(TessBaseAPI.ProgressValues progressValues) {
+                                // views (the progress bar) can only be touched by the main thread
+                                // so we send a message to our main thread handler with the current progress value
+                                // then the handler posts a runnable which will update the progress bar
                                 Message msg = Message.obtain(mHandler, progressValues.getPercent());
                                 msg.sendToTarget();
                             }
                         });
+                        // get the user's preferred language
                         String lang = PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("lang", "eng");
                         tessBaseAPI.init(getActivity().getFilesDir().toString(), lang);
                         tessBaseAPI.setImage(bmp);
+                        // this can take a LONG time
+                        // TODO: all OCR should be done on a background service
                         String result = tessBaseAPI.getUTF8Text();
                         tessBaseAPI.end();
                         return result;
@@ -183,6 +195,7 @@ public class DebugActivity extends Activity {
 
                     @Override
                     protected void onPostExecute(String result) {
+                        // this callback will be executed on the main thread so we can safely update all the views
                         TextView tv = (TextView) getView().findViewById(R.id.debug_ocr_text);
                         tv.setText(result);
                         mProgBar.setVisibility(View.GONE);
@@ -199,6 +212,8 @@ public class DebugActivity extends Activity {
         public static final HashMap<String, Integer> LANG_ASSET_MAP;
 
         static {
+            // initialize the language->asset map
+            // map language abbreviations to the corresponding raw resource ID
             LANG_ASSET_MAP = new HashMap<>();
             LANG_ASSET_MAP.put("eng", R.raw.eng_traineddata_gz);
         }
@@ -210,16 +225,27 @@ public class DebugActivity extends Activity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+            // magically creates views so the user can choose preferences
             addPreferencesFromResource(R.xml.debug_prefs);
         }
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPrefs, String key) {
             if (key.equals("lang")) {
+                // get the user's new language selection
                 String newLang = sharedPrefs.getString(key, "eng");
+                // TesseractAPI requires .traineddata files for OCR, but these
+                // files are really large so we gzip them and include them in the res/raw directory
+                // then when the user selects a new language we need to:
+                // 1) check if we have already unzipped the data file
+                // 2) if not, then we need to unzip the file and store it in a subdirectory of our
+                //    application's private directory named "tessdata" (the TesseractAPI will look for this folder
+                //    and then the file inside it named <lang>.traineddata when we initialize it)
                 File dir = new File(getActivity().getFilesDir(), "tessdata");
                 if (!dir.isDirectory()) {
-                    if (!dir.mkdir()) return;
+                    if (!dir.mkdir()) {
+                        return; // some kind of horrible error occured
+                    }
                 }
                 File langData = new File(dir, newLang + ".traineddata");
                 if (!langData.exists()) {
@@ -242,12 +268,14 @@ public class DebugActivity extends Activity {
         @Override
         public void onStart() {
             super.onStart();
+            // listen for changes to preferences
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
         }
 
         @Override
         public void onPause() {
             super.onPause();
+            // stop listening
             getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         }
     }
