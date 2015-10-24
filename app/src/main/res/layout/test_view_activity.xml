@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="8dp">
+
+        <TextView
+            android:id="@+id/result_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam convallis ligula sed tempor viverra. Curabitur ac dui cursus tellus egestas sollicitudin at a ex. Morbi id elit at ipsum iaculis placerat. Phasellus porttitor metus odio, vel interdum arcu viverra sed. Nullam mi dui, interdum nec condimentum non, lacinia eu orci. Nunc nibh mi, posuere in quam ut, varius semper nisl. Proin vel mauris commodo nulla malesuada consequat. Nulla aliquet urna magna, ut sagittis ex placerat id. Vivamus id varius justo, id volutpat erat. Proin tristique ornare sem, ac finibus ipsum. Vivamus venenatis odio eu dolor egestas blandit. Aenean eleifend, mauris a interdum pellentesque, felis quam fermentum sapien, sed scelerisque turpis elit auctor felis. Phasellus tincidunt placerat magna a convallis. Suspendisse potenti. Sed lectus erat, venenatis a pulvinar et, dapibus quis dolor. Donec a mi in tellus facilisis ultricies in in sapien.
+
+Morbi luctus augue vel enim dignissim, eget ultrices arcu tristique. Cras turpis lorem, maximus quis turpis id, gravida interdum est. Donec leo libero, interdum ac tincidunt sit amet, fringilla sed quam. Phasellus cursus augue tristique nisi pulvinar vestibulum. Nam iaculis interdum felis posuere ultrices. Duis ut magna velit. Donec consequat augue vel rhoncus scelerisque. Duis dignissim sapien et sem dictum, et dignissim dolor euismod. Sed sit amet ex vitae est ullamcorper fringilla eu sed massa. Vestibulum tempus varius pharetra. Nulla accumsan pulvinar iaculis. Sed ac ante velit. In at leo arcu.
+
+Vivamus sed faucibus velit. Cras tincidunt diam id lorem vestibulum, vel luctus lectus mollis. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam sed placerat magna. Proin ac consequat turpis. Interdum et malesuada fames ac ante ipsum primis in faucibus. Phasellus in dolor facilisis, semper orci in, vulputate justo. Ut in egestas nisl. Mauris non nulla ligula. Nulla et eros convallis, faucibus lorem non, finibus lectus. Morbi finibus velit lacus. Vestibulum porta dui ligula, at scelerisque sapien blandit a. Donec a felis a lorem dignissim tristique. Sed ut semper risus, id mollis purus. Duis non enim vel mi imperdiet pretium.
+
+Aenean vitae euismod justo. Etiam luctus risus velit, non feugiat risus blandit quis. Etiam tristique erat elementum eros tempus fringilla. Sed sed dolor nunc. Suspendisse pharetra turpis leo, vel feugiat dui volutpat ac. Donec ultricies fringilla arcu. Duis quis magna ut enim pellentesque hendrerit. Praesent vehicula vehicula mauris, nec vulputate quam cursus in. Curabitur eu eros sagittis, consequat nunc at, sodales enim. Nam imperdiet gravida sapien, eget elementum purus tempor sed. Duis sollicitudin est vitae erat aliquam, ac faucibus risus hendrerit. Integer vulputate ex ac odio bibendum ornare.
+
+Proin sollicitudin convallis lorem a feugiat. Fusce lacinia mauris eget lorem fermentum tincidunt. In pretium elit vitae dui varius vulputate. Vivamus neque elit, rhoncus a luctus id, vehicula sed est. Sed ultricies quis sem id consectetur. Aliquam volutpat tortor mauris, id malesuada nisl blandit ac. Ut in sollicitudin sem, et vulputate est." />
+    </ScrollView>
+</LinearLayout>

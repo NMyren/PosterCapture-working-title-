@@ -10,26 +10,26 @@ import java.util.concurrent.Future;
 /**
  * Created by Ed on 10/22/15.
  */
-public class AsyncTaskManager {
+public class TaskManager {
 
-    private static final AsyncTaskManager sInstance;
+    private static final TaskManager sInstance;
 
     private final ExecutorService mOcrExecutorService;
 
     static {
-        sInstance = new AsyncTaskManager();
+        sInstance = new TaskManager();
     }
 
-    private AsyncTaskManager() {
+    private TaskManager() {
         mOcrExecutorService = Executors.newSingleThreadExecutor();
     }
 
     /**
-     * Gets the instance of {@link AsyncTaskManager}.
+     * Gets the instance of {@link TaskManager}.
      *
-     * @return The global instance of {@link AsyncTaskManager}.
+     * @return The global instance of {@link TaskManager}.
      */
-    public static AsyncTaskManager getInstance() {
+    public static TaskManager getInstance() {
         return sInstance;
     }
 
@@ -43,5 +43,18 @@ public class AsyncTaskManager {
      */
     public Future<OcrResult> addOcrTask(Uri imgUri, String lang, Context context) {
         return mOcrExecutorService.submit(new OcrCallable(imgUri, lang, context));
+    }
+
+    /**
+     * Starts a new task to wait for the completion of the OCR task and handle the result.
+     *
+     * @param future A {@link Future<OcrResult>} obtained by a call to
+     *               {@link #addOcrTask(Uri, String, Context)}.
+     * @return The executed {@link AsyncPostOcrTask}.
+     */
+    public AsyncPostOcrTask startPostOcrTask(Future<OcrResult> future) {
+        AsyncPostOcrTask postOcrTask = new AsyncPostOcrTask();
+        postOcrTask.execute(future);
+        return postOcrTask;
     }
 }

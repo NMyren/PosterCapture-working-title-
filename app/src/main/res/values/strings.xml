@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Poster Capture</string>
+    <string name="notification_state_file_key">com.droid.mooresoft.postercapture.NOTIFICATION_STATE_FILE_KEY</string>
 </resources>

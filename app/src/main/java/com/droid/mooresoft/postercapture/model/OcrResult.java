@@ -6,7 +6,7 @@ import android.net.Uri;
 /**
  * Created by Ed on 10/23/15.
  */
-class OcrResult {
+public class OcrResult {
 
     private final Uri mImgUri;
 
@@ -28,7 +28,7 @@ class OcrResult {
      *
      * @return The {@link Uri} for the image that was OCR'd.
      */
-    Uri getImageuri() {
+    public Uri getImageuri() {
         return mImgUri;
     }
 
@@ -37,7 +37,7 @@ class OcrResult {
      *
      * @return A Tesseract Tools recognizable language abbreviation.
      */
-    String getLanguage() {
+    public String getLanguage() {
         return mLang;
     }
 
@@ -46,7 +46,7 @@ class OcrResult {
      *
      * @return A {@link Context}.
      */
-    Context getContext() {
+    public Context getContext() {
         return mContext;
     }
 
@@ -55,7 +55,7 @@ class OcrResult {
      *
      * @return A {@link String} representing the UTF8 text recognized in the supplied image.
      */
-    String getResult() {
+    public String getResult() {
         return mResult;
     }
 }

@@ -17,5 +17,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".debug.TextViewActivity" />
+
+        <receiver android:name=".controller.NotificationStatusReciever">
+            <intent-filter>
+                <action android:name="com.droid.mooresoft.postercapture.action.NOTIFICATION_CLEARED" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".controller.TaskService" />
     </application>
 </manifest>
